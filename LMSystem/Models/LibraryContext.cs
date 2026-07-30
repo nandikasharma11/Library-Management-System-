@@ -57,5 +57,6 @@ namespace LMSystem.Models
 
         public DbSet<Book> Books12 { get; set; }
         public DbSet<BorrowRecord> BorrowRecords12 { get; set; }
+        public DbSet<Publication> Publications { get; set; }
     }
 }

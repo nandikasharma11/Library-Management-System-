@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm p-4">
+        <h2 class="text-primary border-bottom pb-2 mb-4">Contact Us</h2>
+        <p class="lead">
+            Have questions, feedback, or need assistance? We'd love to hear from you.
+        </p>
+        <div class="row mt-4">
+            <div class="col-md-6 mb-3">
+                <h5>Support Email</h5>
+                <p class="text-muted"><i class="bi bi-envelope-fill"></i> support@lmsystem.com</p>
+                
+                <h5>Phone Number</h5>
+                <p class="text-muted"><i class="bi bi-telephone-fill"></i> +1 (555) 123-4567</p>
+
+                <h5>Office Address</h5>
+                <p class="text-muted">
+                    <i class="bi bi-geo-alt-fill"></i> 123 Innovation Way, Tech Park,<br />
+                    Suite 400, CA 94043
+                </p>
+            </div>
+            <div class="col-md-6">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Your Name</label>
+                        <input type="text" class="form-control" placeholder="Enter your name" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control" placeholder="Enter your email" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" rows="3" placeholder="Enter your message"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" onclick="alert('Thank you! Your message has been sent.')">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
