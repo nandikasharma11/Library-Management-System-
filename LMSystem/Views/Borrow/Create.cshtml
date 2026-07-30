@@ -1,0 +1,45 @@
+@model LMSystem.ViewModels.BorrowViewModel
+@{
+    ViewData["Title"] = "Borrow Book";
+}
+
+<div class="container mt-5">
+    <h2>Borrow Book</h2>
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <strong>@Model.BookTitle</strong>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post" class="needs-validation" novalidate>
+                <input type="hidden" asp-for="BookId" />
+                
+                <div class="mb-3">
+                    <label asp-for="BorrowerName" class="form-label"></label>
+                    <input asp-for="BorrowerName" class="form-control" placeholder="Enter Borrower Name" />
+                    <span asp-validation-for="BorrowerName" class="text-danger"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label asp-for="BorrowerEmail" class="form-label"></label>
+                    <input asp-for="BorrowerEmail" class="form-control" type="email" placeholder="Enter Borrower Email" />
+                    <span asp-validation-for="BorrowerEmail" class="text-danger"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label asp-for="Phone" class="form-label"></label>
+                    <input asp-for="Phone" class="form-control" placeholder="Enter Phone Number" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+                
+                <div class="d-flex justify-content-start gap-2">
+                    <button type="submit" class="btn btn-primary">Confirm Borrow</button>
+                    <a asp-action="Index" asp-controller="Books" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
