@@ -17,15 +17,45 @@ namespace LMSystem.Controllers
         }
 
         // GET: Books
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? searchQuery, int page = 1)
         {
             try
             {
-                var books = await _context.Books12
+                int pageSize = 5;
+                var booksQuery = _context.Books12
                     .Include(b => b.BorrowRecords)
-                    .AsNoTracking()
+                    .AsNoTracking();
+
+                if (!string.IsNullOrWhiteSpace(searchQuery))
+                {
+                    var cleanQuery = searchQuery.Trim().ToLower();
+                    booksQuery = booksQuery.Where(b =>
+                        (b.Title != null && b.Title.ToLower().Contains(cleanQuery)) ||
+                        (b.Author != null && b.Author.ToLower().Contains(cleanQuery)) ||
+                        (b.ISBN != null && b.ISBN.ToLower().Contains(cleanQuery))
+                    );
+                }
+
+                int totalItems = await booksQuery.CountAsync();
+                int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+                if (page < 1) page = 1;
+                if (page > totalPages && totalPages > 0) page = totalPages;
+
+                var books = await booksQuery
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .ToListAsync();
-                return View(books);
+
+                var viewModel = new BookListViewModel
+                {
+                    Books = books,
+                    SearchQuery = searchQuery,
+                    CurrentPage = page,
+                    TotalPages = totalPages
+                };
+
+                return View(viewModel);
             }
             catch (Exception)
             {

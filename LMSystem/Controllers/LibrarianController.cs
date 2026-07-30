@@ -23,35 +23,73 @@ namespace LMSystem.Controllers
         }
 
         // GET: Librarian
-        public IActionResult Index()
+        public IActionResult Index(string? searchTerm, int page = 1)
         {
+            if (page < 1) page = 1;
+            int pageSize = 5;
+            int offset = (page - 1) * pageSize;
             var librarians = new List<LibrarianModel>();
+            int totalRecords = 0;
+
             try
             {
                 using var con = new SqlConnection(GetConnectionString());
-                var cmd = new SqlCommand("SELECT * FROM Librarians", con);
                 con.Open();
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
+
+                // 1. Get Total Count for Pagination Links
+                string countQuery = "SELECT COUNT(*) FROM Librarians WHERE (@SearchTerm IS NULL OR Name LIKE '%' + @SearchTerm + '%')";
+                using (var countCmd = new SqlCommand(countQuery, con))
                 {
-                    librarians.Add(new LibrarianModel
+                    countCmd.Parameters.AddWithValue("@SearchTerm", (object?)searchTerm ?? DBNull.Value);
+                    totalRecords = Convert.ToInt32(countCmd.ExecuteScalar());
+                }
+
+                // 2. Fetch Filtered and Paginated Records
+                string dataQuery = @"SELECT * FROM Librarians 
+                                     WHERE (@SearchTerm IS NULL OR Name LIKE '%' + @SearchTerm + '%')
+                                     ORDER BY LibrarianId 
+                                     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+
+                using (var cmd = new SqlCommand(dataQuery, con))
+                {
+                    cmd.Parameters.AddWithValue("@SearchTerm", (object?)searchTerm ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Offset", offset);
+                    cmd.Parameters.AddWithValue("@PageSize", pageSize);
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
                     {
-                        LibrarianId = Convert.ToInt32(reader["LibrarianId"]),
-                        Name = reader["Name"].ToString(),
-                        Age = Convert.ToInt32(reader["Age"]),
-                        Phone = reader["Phone"].ToString()
-                    });
+                        librarians.Add(new LibrarianModel
+                        {
+                            LibrarianId = Convert.ToInt32(reader["LibrarianId"]),
+                            Name = reader["Name"].ToString(),
+                            Age = Convert.ToInt32(reader["Age"]),
+                            Phone = reader["Phone"].ToString()
+                        });
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error reading librarians: " + ex.Message);
-                // Return dummy list for layout demonstration on Mac
+                Console.WriteLine("Error reading paginated librarians: " + ex.Message);
+                // Seed dummy data for macOS local development
                 librarians.Add(new LibrarianModel { LibrarianId = 3, Name = "Michael Scott", Age = 45, Phone = "555-0203" });
                 librarians.Add(new LibrarianModel { LibrarianId = 4, Name = "Ellen Ripley", Age = 39, Phone = "555-0204" });
                 librarians.Add(new LibrarianModel { LibrarianId = 5, Name = "James Bond", Age = 40, Phone = "555-0205" });
+                totalRecords = 3;
             }
-            return View(librarians);
+
+            // 3. Populate and return View Model
+            var viewModel = new LibrarianIndexViewModel
+            {
+                Librarians = librarians,
+                SearchTerm = searchTerm,
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling((double)totalRecords / pageSize)
+            };
+
+            return View(viewModel);
         }
 
         // GET: Librarian/Create

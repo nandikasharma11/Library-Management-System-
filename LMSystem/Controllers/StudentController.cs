@@ -23,36 +23,87 @@ namespace LMSystem.Controllers
         }
 
         // GET: Student
-        public IActionResult Index()
+        public IActionResult Index(string? searchTerm, int page = 1)
         {
+            var viewModel = new StudentIndexViewModel
+            {
+                SearchTerm = searchTerm,
+                CurrentPage = page < 1 ? 1 : page
+            };
+
             var students = new List<StudentModel>();
+            int totalRecords = 0;
+
             try
             {
                 using var con = new SqlConnection(GetConnectionString());
-                var cmd = new SqlCommand("SELECT * FROM Students", con);
                 con.Open();
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
+
+                // 1. Build Dynamic Search Query Components
+                string searchCondition = "";
+                if (!string.IsNullOrEmpty(searchTerm))
                 {
-                    students.Add(new StudentModel
+                    searchCondition = " WHERE Student_Name LIKE @Search OR Email LIKE @Search OR Phone_Number LIKE @Search";
+                }
+
+                // 2. Query Total Count for Pagination Bounds
+                string countQuery = $"SELECT COUNT(*) FROM Students{searchCondition}";
+                using (var countCmd = new SqlCommand(countQuery, con))
+                {
+                    if (!string.IsNullOrEmpty(searchTerm))
                     {
-                        StudentId = Convert.ToInt32(reader["StudentId"]),
-                        StudentName = reader["Student_Name"].ToString(),
-                        Email = reader["Email"].ToString(),
-                        Phone = reader["Phone_Number"].ToString()
-                    });
+                        countCmd.Parameters.AddWithValue("@Search", $"%{searchTerm}%");
+                    }
+                    totalRecords = Convert.ToInt32(countCmd.ExecuteScalar());
+                }
+
+                viewModel.TotalPages = (int)Math.Ceiling((double)totalRecords / viewModel.PageSize);
+                if (viewModel.CurrentPage > viewModel.TotalPages && viewModel.TotalPages > 0)
+                {
+                    viewModel.CurrentPage = viewModel.TotalPages;
+                }
+
+                // 3. Fetch Paginated Segment using OFFSET-FETCH
+                int offset = (viewModel.CurrentPage - 1) * viewModel.PageSize;
+                string dataQuery = $@"SELECT * FROM Students{searchCondition}
+                                      ORDER BY StudentId 
+                                      OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+
+                using (var dataCmd = new SqlCommand(dataQuery, con))
+                {
+                    if (!string.IsNullOrEmpty(searchTerm))
+                    {
+                        dataCmd.Parameters.AddWithValue("@Search", $"%{searchTerm}%");
+                    }
+                    dataCmd.Parameters.AddWithValue("@Offset", offset);
+                    dataCmd.Parameters.AddWithValue("@PageSize", viewModel.PageSize);
+
+                    using var reader = dataCmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        students.Add(new StudentModel
+                        {
+                            StudentId = Convert.ToInt32(reader["StudentId"]),
+                            StudentName = reader["Student_Name"].ToString(),
+                            Email = reader["Email"].ToString(),
+                            Phone = reader["Phone_Number"].ToString()
+                        });
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error fetching students: " + ex.Message);
-                // Return dummy list for layout demonstration on Mac
+                Console.WriteLine("Error reading paginated students: " + ex.Message);
+                // Seed dummy data for local preview on macOS
                 students.Add(new StudentModel { StudentId = 2, StudentName = "Bob Smith", Email = "bob.smith@email.com", Phone = "555-0102" });
                 students.Add(new StudentModel { StudentId = 3, StudentName = "Charlie Brown", Email = "charlie.b@email.com", Phone = "555-0103" });
                 students.Add(new StudentModel { StudentId = 4, StudentName = "Diana Prince", Email = "diana.p@email.com", Phone = "555-0104" });
                 students.Add(new StudentModel { StudentId = 5, StudentName = "Evan Wright", Email = "evan.w@email.com", Phone = "555-0105" });
+                viewModel.TotalPages = 1;
             }
-            return View(students);
+
+            viewModel.Students = students;
+            return View(viewModel);
         }
 
         // GET: Student/Create

@@ -1,4 +1,4 @@
-@model IEnumerable<LMSystem.Models.Book>
+@model LMSystem.Models.BookListViewModel
 @{
     ViewData["Title"] = "Books List";
 }
@@ -19,6 +19,21 @@
 }
 
 <h2>@ViewData["Title"]</h2>
+
+<!-- Add search form and top actions -->
+<div class="d-flex justify-content-between mb-3">
+    <a asp-action="Create" class="btn btn-primary">Add New Book</a>
+    <form asp-action="Index" method="get" class="d-flex gap-2">
+        <input type="text" name="searchQuery" value="@Model.SearchQuery" class="form-control" placeholder="Search by title, author, isbn..." style="width: 250px;" />
+        <button type="submit" class="btn btn-outline-secondary">Search</button>
+        @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+        {
+            <a asp-action="Index" class="btn btn-link">Clear</a>
+        }
+    </form>
+</div>
+
+<!-- Render Table (Using Model.Books) -->
 <table class="table table-striped table-hover">
     <thead class="table-dark">
         <tr>
@@ -31,7 +46,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var book in Model)
+        @foreach (var book in Model.Books)
         {
             <tr id="bookRow-@book.BookId">
                 <td>@book.Title</td>
@@ -76,4 +91,25 @@
     </tbody>
 </table>
 
-<a asp-action="Create" class="btn btn-primary">Add New Book</a>
+<!-- Pagination Controls -->
+@if (Model.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            <!-- Previous Page -->
+            <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage - 1)" asp-route-searchQuery="@Model.SearchQuery">Previous</a>
+            </li>
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-searchQuery="@Model.SearchQuery">@i</a>
+                </li>
+            }
+            <!-- Next Page -->
+            <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage + 1)" asp-route-searchQuery="@Model.SearchQuery">Next</a>
+            </li>
+        </ul>
+    </nav>
+}
