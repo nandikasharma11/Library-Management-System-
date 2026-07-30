@@ -1,0 +1,18 @@
+# LMSystem Project Requirements & Dependencies
+
+# Runtime Environment
+.NET SDK >= 8.0
+SQL Server >= 2019 (or LocalDB on Windows)
+
+# NuGet Packages - LMSystem Project
+Microsoft.EntityFrameworkCore.SqlServer == 8.0.*
+Microsoft.EntityFrameworkCore.Tools == 8.0.*
+Microsoft.AspNetCore.Identity.EntityFrameworkCore == 8.0.*
+Microsoft.Data.SqlClient == 5.1.7
+
+# NuGet Packages - LMSystem.Tests Project
+FluentAssertions == 8.10.0
+Microsoft.EntityFrameworkCore.InMemory == 8.0.*
+xunit == 2.5.3
+xunit.runner.visualstudio == 2.5.3
+Microsoft.NET.Test.Sdk == 17.8.0
