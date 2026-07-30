@@ -1,0 +1,47 @@
+@model IEnumerable<LMSystem.Models.LibrarianModel>
+@{
+    ViewData["Title"] = "Librarians";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Librarians</h2>
+        <a class="btn btn-primary" href="/Librarian/Create">Add New Librarian</a>
+    </div>
+
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>LibrarianID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Phone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.LibrarianId</td>
+                        <td>@item.Name</td>
+                        <td>@item.Age</td>
+                        <td>@item.Phone</td>
+                        <td>
+                            <a class="btn btn-warning btn-sm" href="/Librarian/Edit/@item.LibrarianId">Edit</a>
+                            <a class="btn btn-danger btn-sm" href="/Librarian/Delete/@item.LibrarianId" onclick="return confirm('Are you sure?')">Delete</a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No librarian records found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

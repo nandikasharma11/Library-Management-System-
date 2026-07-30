@@ -1,0 +1,47 @@
+@model IEnumerable<LMSystem.Models.StudentModel>
+@{
+    ViewData["Title"] = "Students";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Students</h2>
+        <a class="btn btn-primary" href="/Student/Create">Add New Student</a>
+    </div>
+
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>StudentID</th>
+                <th>StudentName</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.StudentId</td>
+                        <td>@item.StudentName</td>
+                        <td>@item.Email</td>
+                        <td>@item.Phone</td>
+                        <td>
+                            <a class="btn btn-warning btn-sm" href="/Student/Edit/@item.StudentId">Edit</a>
+                            <a class="btn btn-danger btn-sm" href="/Student/Delete/@item.StudentId" onclick="return confirm('Are you sure?')">Delete</a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No student records found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
